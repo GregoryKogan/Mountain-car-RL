@@ -13,7 +13,9 @@
   "dependencies": {
     "pinia": "^2.0.28",
     "vue": "^3.2.45",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "@tensorflow/tfjs": "^4.2.0",
+    "p5js-wrapper": "^1.2.3"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
