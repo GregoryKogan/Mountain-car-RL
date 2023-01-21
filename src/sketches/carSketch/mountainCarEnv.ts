@@ -201,9 +201,9 @@ export class MountainCarEnvironment {
 
     this.p5.push();
     this.p5.stroke("#c0caf5");
-    this.p5.strokeWeight(5);
+    this.p5.strokeWeight(4);
     this.p5.fill("#f7768e");
-    this.p5.line(x, y, x, y - this.p5.height * 0.15);
+    this.p5.line(x, y - 2, x, y - this.p5.height * 0.15);
     this.p5.noStroke();
     this.p5.triangle(
       x,
@@ -217,8 +217,8 @@ export class MountainCarEnvironment {
   }
 
   render(): void {
-    this.renderRoad();
     this.renderCar();
     this.renderFlag();
+    this.renderRoad();
   }
 }
