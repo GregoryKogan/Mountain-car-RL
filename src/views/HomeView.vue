@@ -1,6 +1,6 @@
 <template>
-  <h1>Hello, world!</h1>
-  <div style="padding: 20px; background-color: #f6ca09">
+  <h1>Mountain Car Problem - Reinforcement Learning</h1>
+  <div class="sketch-wrapper">
     <sketch-component
       sketch-name="car-sketch"
       :sketch="carSketch"
@@ -22,3 +22,12 @@ export default defineComponent({
   components: { SketchComponent },
 });
 </script>
+
+<style scoped>
+.sketch-wrapper {
+  border: 2px solid;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 18px 18px 46px #14151e, -18px -18px 46px #20212e, 0 0 10px #c0caf5;
+}
+</style>

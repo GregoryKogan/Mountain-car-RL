@@ -18,11 +18,6 @@ export interface p5Interface {
   height: number;
 }
 
-export interface sketchInterface {
-  setup: () => void;
-  draw: () => void;
-}
-
 export default defineComponent({
   name: "SketchComponent",
   props: {
