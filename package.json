@@ -11,14 +11,16 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^4.2.0",
+    "lodash": "^4.17.21",
+    "p5js-wrapper": "^1.2.3",
     "pinia": "^2.0.28",
     "vue": "^3.2.45",
-    "vue-router": "^4.1.6",
-    "@tensorflow/tfjs": "^4.2.0",
-    "p5js-wrapper": "^1.2.3"
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.12",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-prettier": "^7.0.0",
