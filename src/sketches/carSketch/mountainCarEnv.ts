@@ -1,4 +1,5 @@
 import type { p5Interface } from "@/components/SketchComponent.vue";
+import { tensor2d } from "@tensorflow/tfjs";
 
 export class MountainCarEnvironment {
   minPosition: number;
@@ -68,6 +69,10 @@ export class MountainCarEnvironment {
     return this.isDone();
   }
 
+  getStateTensor() {
+    return tensor2d([[this.position, this.velocity]]);
+  }
+
   isDone(): boolean {
     return (
       this.position >= this.goalPosition && this.velocity >= this.goalVelocity
@@ -96,7 +101,7 @@ export class MountainCarEnvironment {
   renderRoad(): void {
     this.p5.push();
     this.p5.stroke("#7aa2f7");
-    this.p5.strokeWeight(3);
+    this.p5.strokeWeight(this.p5.height / 250);
 
     let previousPoint = null;
     for (let x = this.minPosition; x <= this.maxPosition; x += 0.001) {
@@ -201,10 +206,10 @@ export class MountainCarEnvironment {
 
     this.p5.push();
     this.p5.stroke("#c0caf5");
-    this.p5.strokeWeight(4);
-    this.p5.fill("#f7768e");
+    this.p5.strokeWeight(this.p5.height / 200);
     this.p5.line(x, y - 2, x, y - this.p5.height * 0.15);
     this.p5.noStroke();
+    this.p5.fill("#f7768e");
     this.p5.triangle(
       x,
       y - this.p5.height * 0.15,

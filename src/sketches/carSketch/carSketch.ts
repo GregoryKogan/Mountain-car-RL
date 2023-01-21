@@ -3,11 +3,10 @@ import { MountainCarEnvironment } from "./mountainCarEnv";
 
 export class CarSketch {
   p5: p5Interface | null;
-  mountainCarEnv: any;
+  mountainCarEnv: MountainCarEnvironment | null;
   constructor() {
     this.p5 = null;
-
-    this.mountainCarEnv;
+    this.mountainCarEnv = null;
   }
 
   setup(p5: p5Interface) {
@@ -19,7 +18,7 @@ export class CarSketch {
   draw() {
     if (!this.p5) return;
     this.p5.background("#1a1b26");
-    this.mountainCarEnv.controlKeyboard();
-    this.mountainCarEnv.render();
+    this.mountainCarEnv!.controlKeyboard();
+    this.mountainCarEnv!.render();
   }
 }
