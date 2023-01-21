@@ -1,23 +1,25 @@
 import type { p5Interface } from "@/components/SketchComponent.vue";
+import { MountainCarEnvironment } from "./mountainCarEnv";
 
 export class CarSketch {
   p5: p5Interface | null;
-  posX: number;
+  mountainCarEnv: any;
   constructor() {
     this.p5 = null;
 
-    this.posX = 0;
+    this.mountainCarEnv;
   }
 
   setup(p5: p5Interface) {
     this.p5 = p5;
+    this.mountainCarEnv = new MountainCarEnvironment(p5);
+    this.p5.frameRate(60);
   }
 
   draw() {
     if (!this.p5) return;
     this.p5.background("#1a1b26");
-    this.posX += this.p5.width / 1000;
-    if (this.posX > this.p5.width) this.posX = 0;
-    this.p5.circle(this.posX, this.p5.height / 2, this.p5.width / 10);
+    this.mountainCarEnv.controlKeyboard();
+    this.mountainCarEnv.render();
   }
 }

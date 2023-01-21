@@ -14,8 +14,43 @@ export interface p5Interface {
   draw: any;
   background: any;
   circle: (arg0: number, arg1: number, arg2: number) => void;
+  line: (arg0: number, arg1: number, arg2: number, arg3: number) => void;
+  rect: (
+    arg0: number,
+    arg1: number,
+    arg2: number,
+    arg3: number,
+    arg4: number | null
+  ) => void;
+  triangle: (
+    arg0: number,
+    arg1: number,
+    arg2: number,
+    arg3: number,
+    arg4: number,
+    arg5: number
+  ) => void;
+  map: (
+    arg0: number,
+    arg1: number,
+    arg2: number,
+    arg3: number,
+    arg4: number
+  ) => number;
+  stroke: (arg0: string) => void;
+  noStroke: () => void;
+  push: () => void;
+  pop: () => void;
+  fill: (arg0: string) => void;
+  strokeWeight: (arg0: number) => void;
+  rotate: (arg0: number) => void;
+  translate: (arg0: number, arg1: number) => void;
+  frameRate: (arg0: number) => void;
+  keyIsDown: (arg0: number) => boolean;
   width: number;
   height: number;
+  LEFT_ARROW: number;
+  RIGHT_ARROW: number;
 }
 
 export default defineComponent({

@@ -13,7 +13,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import SketchComponent from "@/components/SketchComponent.vue";
-import { CarSketch } from "@/sketches/carSketch";
+import { CarSketch } from "@/sketches/carSketch/carSketch";
 
 export default defineComponent({
   name: "HomeView",
