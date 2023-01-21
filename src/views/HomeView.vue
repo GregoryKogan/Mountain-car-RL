@@ -1,5 +1,6 @@
 <template>
   <h1>Mountain Car Problem - Reinforcement Learning</h1>
+  <br />
   <div class="sketch-wrapper">
     <sketch-component
       sketch-name="car-sketch"
@@ -25,6 +26,9 @@ export default defineComponent({
 
 <style scoped>
 .sketch-wrapper {
+  margin: auto;
+  max-width: 100vh;
+  isolation: isolate;
   border: 2px solid;
   border-radius: 20px;
   overflow: hidden;
