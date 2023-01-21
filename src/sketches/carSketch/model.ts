@@ -9,7 +9,7 @@ export class Model {
   constructor(batchSize: number, trainedModel: tf.Sequential | null = null) {
     this.numStates = 2;
     this.numActions = 3;
-    this.hiddenLayerSizes = [50, 30, 20, 10];
+    this.hiddenLayerSizes = [128, 64, 16];
     this.batchSize = batchSize;
     this.network = null;
 
