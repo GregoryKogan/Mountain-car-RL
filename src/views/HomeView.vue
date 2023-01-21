@@ -8,6 +8,10 @@
       :aspect-ratio="16 / 9"
     />
   </div>
+  <div class="sketch-data">
+    <br />
+    <h3>Steps: {{ carSketch.orchestrator?.totalSteps }}</h3>
+  </div>
 </template>
 
 <script lang="ts">
@@ -33,5 +37,10 @@ export default defineComponent({
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 18px 18px 46px #14151e, -18px -18px 46px #20212e, 0 0 10px #c0caf5;
+}
+
+.sketch-data {
+  margin: auto;
+  max-width: 100vh;
 }
 </style>

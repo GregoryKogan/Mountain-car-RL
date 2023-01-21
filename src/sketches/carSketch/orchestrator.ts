@@ -3,6 +3,7 @@ import type { Model } from "./model";
 import type { Memory } from "./memory";
 
 import * as tf from "@tensorflow/tfjs";
+import { toRaw } from "vue";
 
 export class Orchestrator {
   mountainCarEnv: MountainCarEnvironment;
@@ -141,8 +142,8 @@ export class Orchestrator {
         if (nextState)
           currentQ[action] += this.discountRate * nextQ.max().dataSync();
 
-        x.push(state.dataSync());
-        y.push(currentQ.dataSync());
+        x.push(toRaw(state).dataSync());
+        y.push(toRaw(currentQ).dataSync());
       }
     );
 

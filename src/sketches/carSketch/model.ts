@@ -1,12 +1,13 @@
 import * as tf from "@tensorflow/tfjs";
+import { toRaw } from "vue";
 
 export class Model {
   numStates: number;
   numActions: number;
   batchSize: number;
   hiddenLayerSizes: number[];
-  network: any;
-  constructor(batchSize: number, trainedModel: tf.Sequential | null = null) {
+  network: tf.LayersModel | null;
+  constructor(batchSize: number, trainedModel: tf.LayersModel | null = null) {
     this.numStates = 2;
     this.numActions = 3;
     this.hiddenLayerSizes = [128, 64, 16];
@@ -23,44 +24,54 @@ export class Model {
   }
 
   defineModel(): void {
-    this.network = tf.sequential();
+    const newNetwork = tf.sequential();
     this.hiddenLayerSizes.forEach((hiddenLayerSize, i) => {
-      this.network.add(
+      newNetwork.add(
         tf.layers.dense({
           units: hiddenLayerSize,
           kernelInitializer: "varianceScaling",
-          activation:
-            i == this.hiddenLayerSizes.length - 1 ? "softmax" : "relu",
+          activation: "relu",
           // `inputShape` is required only for the first layer.
           inputShape: i == 0 ? [this.numStates] : undefined,
         })
       );
     });
-    this.network.add(tf.layers.dense({ units: this.numActions }));
+    newNetwork.add(
+      tf.layers.dense({
+        units: this.numActions,
+        kernelInitializer: "varianceScaling",
+        activation: "softmax",
+      })
+    );
 
+    this.network = newNetwork;
     this.network.summary();
-    this.network.compile({ optimizer: "adam", loss: "meanSquaredError" });
+    const optimizer = tf.train.adam();
+    this.network.compile({
+      optimizer: optimizer,
+      loss: "categoricalCrossentropy",
+    });
   }
 
   predict(
-    states: tf.Tensor | tf.Tensor[]
+    state: tf.Tensor | tf.Tensor[]
   ): tf.Tensor<tf.Rank> | tf.Tensor<tf.Rank>[] {
-    return tf.tidy(() => this.network.predict(states));
+    if (!this.network) throw new Error("Network is not initialized!");
+    return toRaw(this.network!).predict(toRaw(state));
   }
 
   async train(xBatch: tf.Tensor[], yBatch: tf.Tensor[]): Promise<void> {
-    await this.network.fit(xBatch, yBatch);
+    if (!this.network) throw new Error("Network is not initialized!");
+    await toRaw(this.network!).fit(xBatch, yBatch);
   }
 
-  chooseAction(state: tf.Tensor, eps: number) {
-    if (Math.random() < eps) {
+  chooseAction(state: tf.Tensor, eps: number): number {
+    if (Math.random() < eps)
       return Math.floor(Math.random() * this.numActions) - 1;
-    } else {
-      return tf.tidy(() => {
-        const prediction = this.network.predict(state).argMax(-1).dataSync()[0];
-        console.log(prediction - 1);
-        return prediction - 1;
-      });
+    else {
+      const prediction: any = this.predict(state);
+      const action = prediction.argMax(-1).dataSync()[0];
+      return action - 1;
     }
   }
 }
