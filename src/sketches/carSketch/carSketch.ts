@@ -17,7 +17,6 @@ export class CarSketch {
 
   draw() {
     if (!this.p5) return;
-    this.p5.background("#1a1b26");
     this.mountainCarEnv!.controlKeyboard();
     this.mountainCarEnv!.render();
   }

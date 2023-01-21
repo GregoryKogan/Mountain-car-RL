@@ -222,6 +222,7 @@ export class MountainCarEnvironment {
   }
 
   render(): void {
+    this.p5.background("#1a1b26");
     this.renderCar();
     this.renderFlag();
     this.renderRoad();
