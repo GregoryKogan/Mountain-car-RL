@@ -1,4 +1,5 @@
 import { sampleSize } from "lodash";
+import * as tf from "@tensorflow/tfjs";
 
 export class Memory {
   maxMemory: number;
@@ -12,8 +13,8 @@ export class Memory {
     this.samples.push(sample);
     if (this.samples.length > this.maxMemory) {
       const [state, , , nextState] = this.samples.shift();
-      state.dispose();
-      nextState.dispose();
+      tf.dispose(state);
+      tf.dispose(nextState);
     }
   }
 

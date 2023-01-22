@@ -47,6 +47,7 @@ export interface p5Interface {
   translate: (arg0: number, arg1: number) => void;
   frameRate: (arg0: number) => void;
   keyIsDown: (arg0: number) => boolean;
+  constrain: (arg0: number, arg1: number, arg2: number) => number;
   width: number;
   height: number;
   LEFT_ARROW: number;

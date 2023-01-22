@@ -27,8 +27,8 @@ export class Orchestrator {
     maxStepsPerGame: number,
     renderWhileTraining: boolean = true,
     minEpsilon: number = 0.01,
-    maxEpsilon: number = 0.2,
-    lambda: number = 0.01
+    maxEpsilon: number = 1,
+    lambda: number = 0.00005
   ) {
     // The main components of the environment
     this.mountainCarEnv = mountainCarEnv;
@@ -55,16 +55,29 @@ export class Orchestrator {
     this.maxPositionStore = new Array();
   }
 
-  computeReward(position: number): number {
-    if (position >= 0.5) return 100;
-    if (position >= 0.25) return 20;
-    if (position >= 0.1) return 10;
-    if (position >= 0) return 5;
-    return 0;
+  computeReward(
+    position: number,
+    velocity: number
+    // nextVelocity: number
+  ): number {
+    if (position >= 0.5) return 1000;
+    // return 300 * Math.abs(Math.abs(nextVelocity) - Math.abs(velocity));
+
+    // if (position >= 0.3) return 40;
+    // if (position >= 0.1) return 20;
+    // if (position >= -0.1) return 10;
+    // if (position >= -0.3) return 5;
+    // if (position >= -0.5) return 1;
+    // else return 0;
+
+    const kineticEnergy = (90 * velocity) ** 2 / 2;
+    const height = Math.sin(3 * position) + 1;
+    const potentialEnergy = 10 * height;
+    return (kineticEnergy + potentialEnergy) / 40;
   }
 
   async play() {
-    this.mountainCarEnv.setRandomState();
+    this.mountainCarEnv.setStartingState();
     let state: tf.Tensor2D | null = this.mountainCarEnv.getStateTensor();
     let totalReward = 0;
     let maxPosition = -100; // Obviously less than any possible position
@@ -80,8 +93,13 @@ export class Orchestrator {
 
       // Act!
       const action = this.model.chooseAction(state!, this.eps);
+      // const prevVelocity = this.mountainCarEnv.velocity;
       done = this.mountainCarEnv.update(action);
-      const reward = this.computeReward(this.mountainCarEnv.position);
+      const reward = this.computeReward(
+        this.mountainCarEnv.position,
+        // prevVelocity
+        this.mountainCarEnv.velocity
+      );
 
       let nextState: tf.Tensor2D | null = this.mountainCarEnv.getStateTensor();
 
@@ -93,7 +111,12 @@ export class Orchestrator {
 
       // Adding to memory information about starting state, action,
       // and outcome of that action for future learning
-      this.memory.addSample([state, action, reward, nextState]);
+      this.memory.addSample([
+        state!.dataSync(),
+        action,
+        reward,
+        nextState!.dataSync(),
+      ]);
 
       this.totalSteps++;
       // Exponentially decay the exploration parameter
@@ -110,13 +133,17 @@ export class Orchestrator {
     // Keep track of the max position reached and store the total reward
     this.rewardStore.push(totalReward);
     this.maxPositionStore.push(maxPosition);
-
-    await this.learnFromExperience();
   }
 
   async learnFromExperience() {
     // Sample from memory
-    const batch = this.memory.sample(this.model.batchSize);
+    let batch = this.memory.sample(this.model.batchSize);
+    batch = batch.map(([state, action, reward, nextState]) => [
+      tf.tensor2d([[state[0], state[1]]]),
+      action,
+      reward,
+      nextState ? tf.tensor2d([[nextState[0], nextState[1]]]) : null,
+    ]);
     const states = batch.map(([state, , ,]) => state);
     const nextStates = batch.map(([, , , nextState]) =>
       nextState ? nextState : tf.zeros([this.model.numStates])
@@ -148,8 +175,8 @@ export class Orchestrator {
     );
 
     // Clean unused tensors
-    actionsValues.forEach((state: any) => state.dispose());
-    nextActionsValues.forEach((state: any) => state.dispose());
+    actionsValues.forEach((state: any) => tf.dispose(state));
+    nextActionsValues.forEach((state: any) => tf.dispose(state));
 
     // Reshape the batches to be fed to the network
     const xTensor: any = tf.tensor2d(x, [x.length, this.model.numStates]);
@@ -158,7 +185,7 @@ export class Orchestrator {
     // Learn the Q(s, a) values given associated discounted rewards
     await this.model.train(xTensor, yTensor);
 
-    xTensor.dispose();
-    yTensor.dispose();
+    tf.dispose(xTensor);
+    tf.dispose(yTensor);
   }
 }

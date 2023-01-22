@@ -10,7 +10,17 @@
   </div>
   <div class="sketch-data">
     <br />
-    <h3>Steps: {{ carSketch.orchestrator?.totalSteps }}</h3>
+    <input
+      type="checkbox"
+      id="checkbox"
+      v-model="rendering"
+      @change="checkRendering"
+    />
+    <label for="checkbox">{{ rendering ? "Rendering" : "No rendering" }}</label>
+    <h3>Game №: {{ gameCounter }}</h3>
+    <h3>Status: {{ status }}</h3>
+    <h3>Last action: {{ lastAction }}</h3>
+    <h3>Steps: {{ steps }}</h3>
   </div>
 </template>
 
@@ -21,10 +31,49 @@ import { CarSketch } from "@/sketches/carSketch/carSketch";
 
 export default defineComponent({
   name: "HomeView",
+  components: { SketchComponent },
   data: () => ({
     carSketch: new CarSketch(),
   }),
-  components: { SketchComponent },
+  computed: {
+    steps(): number {
+      if (!this.carSketch.orchestrator) return 0;
+      return this.carSketch.orchestrator.totalSteps;
+    },
+    lastAction(): string {
+      if (
+        !this.carSketch.orchestrator ||
+        !this.carSketch.orchestrator.memory.samples[
+          this.carSketch.orchestrator.memory.samples.length - 1
+        ]
+      )
+        return "Nothing";
+      const action =
+        this.carSketch.orchestrator.memory.samples[
+          this.carSketch.orchestrator.memory.samples.length - 1
+        ][1];
+      if (action == -1) return "Left";
+      if (action == 1) return "Right";
+      return "Nothing";
+    },
+    gameCounter(): number {
+      return this.carSketch.gameCounter;
+    },
+    status(): string {
+      return this.carSketch.status;
+    },
+    rendering(): boolean {
+      if (!this.carSketch.orchestrator) return false;
+      return this.carSketch.orchestrator.renderWhileTraining;
+    },
+  },
+  methods: {
+    checkRendering() {
+      if (!this.carSketch.orchestrator) return 0;
+      this.carSketch.orchestrator.renderWhileTraining =
+        !this.carSketch.orchestrator.renderWhileTraining;
+    },
+  },
 });
 </script>
 

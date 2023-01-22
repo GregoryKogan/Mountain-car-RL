@@ -6,12 +6,8 @@ export class MountainCarEnvironment {
   maxPosition: number;
   maxSpeed: number;
   goalPosition: number;
-  goalVelocity: number;
-  gravity: number;
   carWidth: number;
   carHeight: number;
-  force: number;
-  friction: number;
   position: number;
   velocity: number;
   p5: p5Interface;
@@ -22,21 +18,17 @@ export class MountainCarEnvironment {
     this.maxPosition = 0.6;
     this.maxSpeed = 0.07;
     this.goalPosition = 0.5;
-    this.goalVelocity = 0;
-    this.gravity = 0.0025;
     this.carWidth = 0.2;
     this.carHeight = 0.1;
-    this.force = 0.0013;
-    this.friction = 0.98;
 
     this.position = 0;
     this.velocity = 0;
 
-    this.setRandomState();
+    this.setStartingState();
   }
 
-  setRandomState(): void {
-    this.position = Math.random() / 5 - 0.6;
+  setStartingState(): void {
+    this.position = -0.5;
     this.velocity = 0;
   }
 
@@ -48,18 +40,17 @@ export class MountainCarEnvironment {
   }
 
   update(action: number): boolean {
-    this.velocity *= this.friction;
-
-    this.velocity +=
-      action * this.force - Math.cos(3 * this.position) * this.gravity;
-    this.velocity = Math.min(
-      Math.max(this.velocity, -this.maxSpeed),
+    this.velocity += action * 0.001 - Math.cos(3 * this.position) * 0.0025;
+    this.velocity = this.p5.constrain(
+      this.velocity,
+      -this.maxSpeed,
       this.maxSpeed
     );
 
     this.position += this.velocity;
-    this.position = Math.min(
-      Math.max(this.position, this.minPosition),
+    this.position = this.p5.constrain(
+      this.position,
+      this.minPosition,
       this.maxPosition
     );
 
@@ -74,9 +65,7 @@ export class MountainCarEnvironment {
   }
 
   isDone(): boolean {
-    return (
-      this.position >= this.goalPosition && this.velocity >= this.goalVelocity
-    );
+    return this.position >= this.goalPosition;
   }
 
   envToScreenCoords(x: number, y: number): [number, number] {
