@@ -28,13 +28,10 @@ export class CarSketch {
     this.p5 = p5;
     this.mountainCarEnv = new MountainCarEnvironment(p5);
     this.model = new Model(
-      5000, // batch size
       [16, 8], // hidden layers
-      0.00003 // learning rate
+      null // learning rate
     );
-    this.memory = new Memory(
-      7000 // memory size
-    );
+    this.memory = new Memory();
     this.orchestrator = new Orchestrator(
       this.mountainCarEnv,
       this.model,

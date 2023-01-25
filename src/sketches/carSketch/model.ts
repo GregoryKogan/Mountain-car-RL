@@ -4,31 +4,32 @@ import { toRaw } from "vue";
 export class Model {
   numStates: number;
   numActions: number;
-  batchSize: number;
   hiddenLayerSizes: number[];
   network: tf.LayersModel | null;
-  learningRate: number;
+  learningRate: number | null;
   constructor(
-    batchSize: number,
     hiddenLayerSizes: number[],
-    learningRate: number,
+    learningRate: number | null = null,
     trainedModel: tf.LayersModel | null = null
   ) {
     this.numStates = 2;
     this.numActions = 3;
     this.hiddenLayerSizes = hiddenLayerSizes;
     this.learningRate = learningRate;
-    this.batchSize = batchSize;
     this.network = null;
 
     if (trainedModel) {
       this.network = trainedModel;
       this.network.summary();
-      const optimizer = tf.train.adam(this.learningRate);
-      this.network.compile({ optimizer: optimizer, loss: "meanSquaredError" });
-    } else {
-      this.defineModel();
-    }
+      let optimizer;
+      if (this.learningRate) optimizer = tf.train.adam(this.learningRate);
+      else optimizer = tf.train.adam();
+      this.network.compile({
+        optimizer: optimizer,
+        loss: "meanSquaredError",
+        // loss: "categoricalCrossentropy",
+      });
+    } else this.defineModel();
   }
 
   defineModel(): void {
@@ -49,15 +50,19 @@ export class Model {
         units: this.numActions,
         kernelInitializer: "varianceScaling",
         activation: "relu",
+        // activation: "softmax",
       })
     );
 
     this.network = newNetwork;
     this.network.summary();
-    const optimizer = tf.train.adam(this.learningRate);
+    let optimizer;
+    if (this.learningRate) optimizer = tf.train.adam(this.learningRate);
+    else optimizer = tf.train.adam();
     this.network.compile({
       optimizer: optimizer,
       loss: "meanSquaredError",
+      // loss: "categoricalCrossentropy",
     });
   }
 

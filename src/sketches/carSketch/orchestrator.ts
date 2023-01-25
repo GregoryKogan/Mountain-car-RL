@@ -12,11 +12,11 @@ export class Orchestrator {
   minEpsilon: number;
   maxEpsilon: number;
   lambda: number;
-  eps: any;
+  eps: number;
   maxStepsPerGame: number;
   discountRate: number;
-  rewardStore: any[];
-  maxPositionStore: any[];
+  rewardStore: number[];
+  maxPositionStore: number[];
   renderWhileTraining: boolean;
   totalSteps: number;
   constructor(
@@ -112,10 +112,10 @@ export class Orchestrator {
       // Adding to memory information about starting state, action,
       // and outcome of that action for future learning
       this.memory.addSample([
-        state!.dataSync(),
+        state!.dataSync() as Float32Array,
         action,
         reward,
-        nextState!.dataSync(),
+        nextState!.dataSync() as Float32Array,
       ]);
 
       this.totalSteps++;
@@ -137,13 +137,15 @@ export class Orchestrator {
 
   async learnFromExperience() {
     // Sample from memory
-    let batch = this.memory.sample(this.model.batchSize);
-    batch = batch.map(([state, action, reward, nextState]) => [
-      tf.tensor2d([[state[0], state[1]]]),
-      action,
-      reward,
-      nextState ? tf.tensor2d([[nextState[0], nextState[1]]]) : null,
-    ]);
+    const dataBatch = this.memory.normalizeAndSample();
+    this.memory.clear();
+    const batch: [tf.Tensor2D, number, number, tf.Tensor2D | null][] =
+      dataBatch.map(([state, action, reward, nextState]) => [
+        tf.tensor2d([[state[0], state[1]]]),
+        action,
+        reward,
+        nextState ? tf.tensor2d([[nextState[0], nextState[1]]]) : null,
+      ]);
     const states = batch.map(([state, , ,]) => state);
     const nextStates = batch.map(([, , , nextState]) =>
       nextState ? nextState : tf.zeros([this.model.numStates])
