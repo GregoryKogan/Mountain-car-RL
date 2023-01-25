@@ -1,7 +1,7 @@
 {
   "name": "mountain-car-rl",
   "version": "0.0.0",
-  "license" : "MIT",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.2.0",
+    "chart.js": "^4.2.0",
     "lodash": "^4.17.21",
     "p5js-wrapper": "^1.2.3",
     "pinia": "^2.0.28",
     "vue": "^3.2.45",
+    "vue-chartjs": "^5.2.0",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

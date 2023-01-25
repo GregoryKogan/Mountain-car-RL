@@ -28,7 +28,7 @@ export class CarSketch {
     this.p5 = p5;
     this.mountainCarEnv = new MountainCarEnvironment(p5);
     this.model = new Model(
-      [16, 8], // hidden layers
+      [32, 32], // hidden layers
       null // learning rate
     );
     this.memory = new Memory();
@@ -68,16 +68,6 @@ export class CarSketch {
 
       console.log("Tensors: ", tf.memory().numTensors);
       console.log("Epsilon", this.orchestrator.eps);
-      console.log(
-        "Max position: ",
-        this.orchestrator.maxPositionStore[
-          this.orchestrator.maxPositionStore.length - 1
-        ]
-      );
-      console.log(
-        "Total reward: ",
-        this.orchestrator.rewardStore[this.orchestrator.rewardStore.length - 1]
-      );
     }
   }
 

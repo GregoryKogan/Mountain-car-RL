@@ -8,15 +8,24 @@
       :aspect-ratio="16 / 9"
     />
   </div>
+  <br />
   <div class="sketch-data">
-    <br />
-    <input
-      type="checkbox"
-      id="checkbox"
-      v-model="rendering"
-      @change="checkRendering"
+    <line-chart
+      title="Total reward"
+      x-title="Games"
+      y-title="Reward"
+      :labels="
+        carSketch.orchestrator
+          ? Array.from(
+              { length: carSketch.orchestrator.rewardStore.length },
+              (_, i) => (i + 1).toString()
+            )
+          : []
+      "
+      :values="
+        carSketch.orchestrator ? [...carSketch.orchestrator.rewardStore] : []
+      "
     />
-    <label for="checkbox">{{ rendering ? "Rendering" : "No rendering" }}</label>
     <h3>Game №: {{ gameCounter }}</h3>
     <h3>Status: {{ status }}</h3>
     <h3>Last action: {{ lastAction }}</h3>
@@ -28,10 +37,11 @@
 import { defineComponent } from "vue";
 import SketchComponent from "@/components/SketchComponent.vue";
 import { CarSketch } from "@/sketches/carSketch/carSketch";
+import LineChart from "@/components/LineChart.vue";
 
 export default defineComponent({
   name: "HomeView",
-  components: { SketchComponent },
+  components: { SketchComponent, LineChart },
   data: () => ({
     carSketch: new CarSketch(),
   }),
@@ -62,17 +72,18 @@ export default defineComponent({
     status(): string {
       return this.carSketch.status;
     },
-    rendering(): boolean {
-      if (!this.carSketch.orchestrator) return false;
-      return this.carSketch.orchestrator.renderWhileTraining;
+    totalRewardChartLabels(): string[] {
+      if (!this.carSketch.orchestrator) return [];
+      return Array.from(
+        { length: this.carSketch.orchestrator.rewardStore.length },
+        (_, i) => (i + 1).toString()
+      );
     },
-  },
-  methods: {
-    checkRendering() {
-      if (!this.carSketch.orchestrator) return 0;
-      this.carSketch.orchestrator.renderWhileTraining =
-        !this.carSketch.orchestrator.renderWhileTraining;
-    },
+    // totalRewardChartValues(): number[] {
+    //   if (!this.carSketch.orchestrator) return [];
+    //   return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    //   // return this.carSketch.orchestrator.rewardStore;
+    // },
   },
 });
 </script>
