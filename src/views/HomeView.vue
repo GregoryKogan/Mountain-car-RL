@@ -8,7 +8,7 @@
       :aspect-ratio="16 / 9"
     />
   </div>
-  <br />
+  <!-- <br />
   <div class="sketch-data">
     <line-chart
       title="Total reward"
@@ -30,7 +30,7 @@
     <h3>Status: {{ status }}</h3>
     <h3>Last action: {{ lastAction }}</h3>
     <h3>Steps: {{ steps }}</h3>
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts">
@@ -45,46 +45,41 @@ export default defineComponent({
   data: () => ({
     carSketch: new CarSketch(),
   }),
-  computed: {
-    steps(): number {
-      if (!this.carSketch.orchestrator) return 0;
-      return this.carSketch.orchestrator.totalSteps;
-    },
-    lastAction(): string {
-      if (
-        !this.carSketch.orchestrator ||
-        !this.carSketch.orchestrator.memory.samples[
-          this.carSketch.orchestrator.memory.samples.length - 1
-        ]
-      )
-        return "Nothing";
-      const action =
-        this.carSketch.orchestrator.memory.samples[
-          this.carSketch.orchestrator.memory.samples.length - 1
-        ][1];
-      if (action == -1) return "Left";
-      if (action == 1) return "Right";
-      return "Nothing";
-    },
-    gameCounter(): number {
-      return this.carSketch.gameCounter;
-    },
-    status(): string {
-      return this.carSketch.status;
-    },
-    totalRewardChartLabels(): string[] {
-      if (!this.carSketch.orchestrator) return [];
-      return Array.from(
-        { length: this.carSketch.orchestrator.rewardStore.length },
-        (_, i) => (i + 1).toString()
-      );
-    },
-    // totalRewardChartValues(): number[] {
-    //   if (!this.carSketch.orchestrator) return [];
-    //   return [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    //   // return this.carSketch.orchestrator.rewardStore;
-    // },
-  },
+  // computed: {
+  //   steps(): number {
+  //     if (!this.carSketch.orchestrator) return 0;
+  //     return this.carSketch.orchestrator.totalSteps;
+  //   },
+  //   lastAction(): string {
+  //     if (
+  //       !this.carSketch.orchestrator ||
+  //       !this.carSketch.orchestrator.memory.samples[
+  //         this.carSketch.orchestrator.memory.samples.length - 1
+  //       ]
+  //     )
+  //       return "Nothing";
+  //     const action =
+  //       this.carSketch.orchestrator.memory.samples[
+  //         this.carSketch.orchestrator.memory.samples.length - 1
+  //       ][1];
+  //     if (action == -1) return "Left";
+  //     if (action == 1) return "Right";
+  //     return "Nothing";
+  //   },
+  //   gameCounter(): number {
+  //     return this.carSketch.gameCounter;
+  //   },
+  //   status(): string {
+  //     return this.carSketch.status;
+  //   },
+  //   totalRewardChartLabels(): string[] {
+  //     if (!this.carSketch.orchestrator) return [];
+  //     return Array.from(
+  //       { length: this.carSketch.orchestrator.rewardStore.length },
+  //       (_, i) => (i + 1).toString()
+  //     );
+  //   },
+  // },
 });
 </script>
 

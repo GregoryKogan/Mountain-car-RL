@@ -1,5 +1,7 @@
 import type { p5Interface } from "@/components/SketchComponent.vue";
+import type { Tensor2D } from "@tensorflow/tfjs";
 import { tensor2d } from "@tensorflow/tfjs";
+import { EnvRenderer } from "./envRenderer";
 
 export class MountainCarEnvironment {
   minPosition: number;
@@ -11,6 +13,7 @@ export class MountainCarEnvironment {
   position: number;
   velocity: number;
   p5: p5Interface;
+  renderer: EnvRenderer;
   constructor(p5: p5Interface) {
     this.p5 = p5;
 
@@ -24,6 +27,8 @@ export class MountainCarEnvironment {
     this.position = 0;
     this.velocity = 0;
 
+    this.renderer = new EnvRenderer(p5, this);
+
     this.setStartingState();
   }
 
@@ -32,14 +37,17 @@ export class MountainCarEnvironment {
     this.velocity = 0;
   }
 
-  controlKeyboard(): void {
+  controlKeyboard(): boolean {
     let action = 0;
     if (this.p5.keyIsDown(this.p5.RIGHT_ARROW)) action += 1;
     if (this.p5.keyIsDown(this.p5.LEFT_ARROW)) action -= 1;
-    this.update(action);
+    return this.step(action)[2];
   }
 
-  update(action: number): boolean {
+  step(action: number): [Tensor2D, number, boolean] {
+    const oldPos = this.position;
+    const oldVel = this.velocity;
+
     this.velocity += action * 0.001 - Math.cos(3 * this.position) * 0.0025;
     this.velocity = this.p5.constrain(
       this.velocity,
@@ -57,163 +65,33 @@ export class MountainCarEnvironment {
     if (this.position == this.minPosition && this.velocity < 0)
       this.velocity = 0;
 
-    return this.isDone();
+    return [
+      this.getStateTensor(),
+      this.computeReward(oldPos, oldVel),
+      this.isDone(),
+    ];
   }
 
-  getStateTensor() {
-    return tensor2d([[this.position, this.velocity]]);
+  computeReward(oldPos: number, oldVel: number): number {
+    let reward =
+      100 *
+      (Math.sin(3 * this.position) * 0.0025 +
+        0.5 * this.velocity * this.velocity -
+        (Math.sin(3 * oldPos) * 0.0025 + 0.5 * oldVel * oldVel));
+    if (this.position >= this.goalPosition) reward += 1;
+    console.log(reward);
+    return reward;
   }
 
   isDone(): boolean {
     return this.position >= this.goalPosition;
   }
 
-  envToScreenCoords(x: number, y: number): [number, number] {
-    const screenX = this.p5.map(
-      x,
-      this.minPosition,
-      this.maxPosition,
-      0,
-      this.p5.width
-    );
-    const screenY = this.p5.map(
-      y,
-      -1,
-      1,
-      this.p5.height * 0.95,
-      this.p5.height * 0.2
-    );
-
-    return [screenX, screenY];
-  }
-
-  renderRoad(): void {
-    this.p5.push();
-    this.p5.stroke("#7aa2f7");
-    this.p5.strokeWeight(this.p5.height / 250);
-
-    let previousPoint = null;
-    for (let x = this.minPosition; x <= this.maxPosition; x += 0.001) {
-      const y = Math.sin(3 * x);
-      const [screenX, screenY] = this.envToScreenCoords(x, y);
-      if (previousPoint)
-        this.p5.line(previousPoint.x, previousPoint.y, screenX, screenY);
-      previousPoint = { x: screenX, y: screenY };
-    }
-    this.p5.pop();
-  }
-
-  roadInclineAt(x: number): number {
-    const [x1, y1] = this.envToScreenCoords(
-      x - 0.001,
-      Math.sin(3 * (x - 0.001))
-    );
-    const [x2, y2] = this.envToScreenCoords(
-      x + 0.001,
-      Math.sin(3 * (x + 0.001))
-    );
-
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return dx / dy;
-  }
-
-  inclineToAngle(k: number): number {
-    let angle = Math.atan2(10, k * 10);
-    if (k < 0) angle += Math.PI;
-    return angle;
-  }
-
-  gradientAt(x: number): number {
-    const y1 = this.envToScreenCoords(x - 0.001, Math.sin(3 * (x - 0.001)))[1];
-    const y2 = this.envToScreenCoords(x + 0.001, Math.sin(3 * (x + 0.001)))[1];
-    return y2 - y1;
-  }
-
-  renderWheel(x: number, radius: number): void {
-    const [screenX, screenY] = this.envToScreenCoords(x, Math.sin(3 * x));
-
-    this.p5.push();
-    this.p5.fill("#414868");
-    this.p5.stroke("#bb9af7");
-    this.p5.strokeWeight(radius / 5);
-    this.p5.translate(screenX, screenY);
-    this.p5.rotate(this.inclineToAngle(this.roadInclineAt(x)));
-    this.p5.circle(0, -radius, radius * 2 - radius / 5);
-    this.p5.fill("#1a1b26");
-    this.p5.noStroke();
-    this.p5.circle(0, -radius, (radius / 3) * 2);
-    this.p5.pop();
-  }
-
-  renderCar(): void {
-    const totalTrackLen = this.maxPosition - this.minPosition;
-
-    const screenCarWidth = (this.carWidth * this.p5.width) / totalTrackLen;
-    const screenCarHeight = (screenCarWidth * this.carHeight) / this.carWidth;
-    const [screenX, screenY] = this.envToScreenCoords(
-      this.position,
-      Math.sin(3 * this.position)
-    );
-
-    this.p5.push();
-    this.p5.stroke("#414868");
-    this.p5.strokeWeight(screenCarHeight / 20);
-    this.p5.fill("#ff9e64");
-    this.p5.translate(screenX, screenY);
-    this.p5.rotate(this.inclineToAngle(this.roadInclineAt(this.position)));
-    this.p5.rect(
-      -screenCarWidth / 2,
-      -screenCarHeight - screenCarHeight / 4,
-      screenCarWidth,
-      screenCarHeight - screenCarHeight / 8,
-      screenCarHeight / 4
-    );
-    this.p5.fill("#b4f9f8");
-    this.p5.stroke("#1a1b26");
-    this.p5.strokeWeight(screenCarHeight / 3 / 5);
-    this.p5.circle(
-      screenCarWidth / 2 - screenCarWidth / 6,
-      -screenCarHeight + screenCarHeight / 10,
-      screenCarHeight / 3
-    );
-    this.p5.pop();
-
-    const wheelOffset =
-      (this.carWidth *
-        Math.cos(this.inclineToAngle(this.roadInclineAt(this.position)))) /
-      4;
-    this.renderWheel(this.position + wheelOffset, screenCarHeight / 3);
-    this.renderWheel(this.position - wheelOffset, screenCarHeight / 3);
-  }
-
-  renderFlag(): void {
-    const [x, y] = this.envToScreenCoords(
-      this.goalPosition,
-      Math.sin(3 * this.goalPosition)
-    );
-
-    this.p5.push();
-    this.p5.stroke("#c0caf5");
-    this.p5.strokeWeight(this.p5.height / 200);
-    this.p5.line(x, y - 2, x, y - this.p5.height * 0.15);
-    this.p5.noStroke();
-    this.p5.fill("#f7768e");
-    this.p5.triangle(
-      x,
-      y - this.p5.height * 0.15,
-      x,
-      y - this.p5.height * 0.1,
-      x - this.p5.width / 30,
-      y - this.p5.height * 0.125
-    );
-    this.p5.pop();
+  getStateTensor(): Tensor2D {
+    return tensor2d([[this.position, this.velocity]]);
   }
 
   render(): void {
-    this.p5.background("#1a1b26");
-    this.renderCar();
-    this.renderFlag();
-    this.renderRoad();
+    this.renderer.render();
   }
 }
